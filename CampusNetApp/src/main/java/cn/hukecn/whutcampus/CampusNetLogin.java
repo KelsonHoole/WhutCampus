@@ -115,8 +115,12 @@ public class CampusNetLogin {
 				if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK)
 				{
 					result = EntityUtils.toString(httpResponse.getEntity(),HTTP.UTF_8);
-						if(listener != null)
+					if(listener != null){
+						if(result.contains("您已在线"))
 							listener.onPostFinishListener(username, SUCCESS,result);
+						else
+							listener.onPostFinishListener(username, NETERROR,"请求错误");
+					}
 				}else
 				{
 					if(listener != null)

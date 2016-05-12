@@ -79,12 +79,25 @@ public class MainActivity extends AppCompatActivity implements CampusNetLogin.Po
             {
                 content[i] = accountList.get(i).getUsername();
             }
-
             arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,content);
             mUsernameView.setAdapter(arrayAdapter);
         }
-        mUsernameView.setText(username);
-        mPasswordView.setText(password);
+
+        if(username != null && username.length() >0)
+        {
+            mUsernameView.setText(username);
+            mPasswordView.setText(password);
+        }else {
+            if(accountList != null && accountList.size()> 0)
+            {
+                UserAccount account = accountList.get(accountList.size() - 1);
+                mUsernameView.setText(account.getUsername());
+                mPasswordView.setText(account.getPassword());
+            }else
+            {
+
+            }
+        }
 
         Button btn_login = (Button) findViewById(R.id.email_sign_in_button);
         if(btn_login != null)
@@ -133,10 +146,23 @@ public class MainActivity extends AppCompatActivity implements CampusNetLogin.Po
                         Toast.makeText(getApplicationContext(),"注销",Toast.LENGTH_SHORT).show();
                     }
                 }).build();
+
+        ConnectionCheck connectionCheck = ConnectionCheck.getInstance();
+        final long startTime = System.currentTimeMillis();
+        connectionCheck.check(new ConnectionCheck.ConnectionCheckListener() {
+            @Override
+            public void onConnectionCheck(boolean isConnect) {
+                long delayTime = System.currentTimeMillis() - startTime;
+                if(isConnect)
+                    Toast.makeText(getApplicationContext(),"网络延迟:"+delayTime+"ms，网络状况良好，high起来...",Toast.LENGTH_LONG).show();
+                else
+                    Toast.makeText(getApplicationContext(),"您的网络貌似不给力...",Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     @Override
-    public void onPostFinishListener(final String username, int flag, final String info) {
+    public void onPostFinishListener(final String username, final int flag, final String info) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -146,8 +172,15 @@ public class MainActivity extends AppCompatActivity implements CampusNetLogin.Po
                 progressDialog.dismiss();
                 View root = infoDialog.getCustomView();
                 TextView tv_info = (TextView) root.findViewById(R.id.info);
-                if(tv_info != null)
-                    tv_info.setText(username+"\n"+info);
+//                if(tv_info != null)
+//                    tv_info.setText(username+"\n"+info);
+                if(flag ==CampusNetLogin.SUCCESS)
+                {
+                    tv_info.setText(username+"\n校园网登陆成功，尽情看片吧...");
+                }else
+                {
+                    tv_info.setText(username+"\n登陆失败，错误信息如下:\n"+info);
+                }
                 infoDialog.show();
             }
         });
